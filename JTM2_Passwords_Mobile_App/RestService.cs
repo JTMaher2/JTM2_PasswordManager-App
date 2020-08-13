@@ -22,7 +22,7 @@ namespace JTM2_Passwords_Mobile_App
             List<JTM2_Password> Passwords = null;
             var uri = new Uri(string.Format(Constants.JTM2_PasswordsUrl, string.Empty));
 
-            StringContent stringContent = new StringContent("{\"MasterPassword\":\"UqJ3W8WqT4#q%hQj#\", \"ModuleId\":440}", System.Text.Encoding.ASCII, "application/json");
+            StringContent stringContent = new StringContent("{\"MasterPassword\":\"\", \"ModuleId\":440}", System.Text.Encoding.ASCII, "application/json");
 
             var response = await _client.PostAsync(uri, stringContent);
             if (response.IsSuccessStatusCode)
