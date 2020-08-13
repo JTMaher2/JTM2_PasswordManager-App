@@ -1,0 +1,9 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/JTM2_Passwords_Mobile_App
+/JTM2_Passwords_Mobile_App/bin
+/JTM2_Passwords_Mobile_App/obj
+/JTM2_Passwords_Mobile_App.Android/bin
+/JTM2_Passwords_Mobile_App.Android/obj
