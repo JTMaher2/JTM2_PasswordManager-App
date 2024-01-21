@@ -8,11 +8,29 @@
 
     <StackLayout>
         <!-- Place new controls here -->
-        <Button Text="Refresh"
-                Clicked="Button_Clicked"/>
-        <ListView x:Name="PasswordsList">
-            
-        </ListView>
+        <Label Text="DNN Username"
+            VerticalOptions="CenterAndExpand" 
+            HorizontalOptions="CenterAndExpand" />
+        <Entry IsPassword="False" x:Name="entDNNUsername"/>
+        <Label Text="DNN Password"
+            VerticalOptions="CenterAndExpand" 
+            HorizontalOptions="CenterAndExpand" />
+        <Entry IsPassword="True" x:Name="entDNNPassword"/>
+        <Label Text="Remember Login?"
+               VerticalOptions="CenterAndExpand"
+               HorizontalOptions="Start"/>
+        <CheckBox x:Name="cbRememberLogin" IsChecked="True"/>
+        <Label x:Name="lblInvalidLogin" 
+            Text="Login Error. Please try again."
+            VerticalOptions="CenterAndExpand" 
+            HorizontalOptions="CenterAndExpand"
+            IsVisible="False"
+            BackgroundColor="Red"
+            TextColor="White"/>
+        <Button Text="Login"
+                Clicked="Button_Login_Clicked"/>
+        <Button Text="Settings"
+                Clicked="Button_Clicked_1"/>
     </StackLayout>
 
 </ContentPage>

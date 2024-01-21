@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="JTM2_Passwords_Mobile_App.SettingsPage">
+    <ContentPage.Content>
+        <StackLayout>
+            <Label Text="Master Password"
+                VerticalOptions="CenterAndExpand" 
+                HorizontalOptions="CenterAndExpand" />
+            <Entry IsPassword="True" x:Name="entMasterPassword"/>
+            <Label Text="Server Address"
+                   VerticalOptions="CenterAndExpand"
+                   HorizontalOptions="CenterAndExpand"/>
+            <Entry IsPassword="False" x:Name="entServerAddress"/>
+            <Button x:Name="btnSaveSettings" Text="Save" Clicked="btnSaveSettings_Clicked"/>
+        </StackLayout>
+    </ContentPage.Content>
+</ContentPage>

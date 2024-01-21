@@ -2,45 +2,57 @@
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 
 namespace JTM2_Passwords_Mobile_App
 {
     public class RestService : IRestService
     {
         HttpClient _client;
+        string m_strBaseURL;
 
         public RestService ()
         {
+            m_strBaseURL = Preferences.Get("JTM2_PasswordManager_BaseURL", "");
             _client = new HttpClient();
+            _client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", Preferences.Get("JTM2_PasswordManager_AccessToken", ""));
         }
 
-        public async Task<List<JTM2_Password>> RefreshDataAsync()
+        public async Task<List<ItemViewModel>> RefreshDataAsync()
         {
-            List<JTM2_Password> Passwords = null;
-            var uri = new Uri(string.Format(Constants.JTM2_PasswordsUrl, string.Empty));
+            string strMasterPassword = Preferences.Get("JTM2_PasswordManager_MasterPassword", "");
 
-            StringContent stringContent = new StringContent("{\"MasterPassword\":\"\", \"ModuleId\":440}", System.Text.Encoding.ASCII, "application/json");
+            HttpResponseMessage response = await _client.GetAsync(m_strBaseURL + Constants.JTM2_PasswordsUrl + "?" + (!string.IsNullOrWhiteSpace(strMasterPassword) ? "M_StrMasterPassword=" + Uri.EscapeDataString(strMasterPassword) : "") + "&Page=1&PageSize=10&Descending=false");
 
-            var response = await _client.PostAsync(uri, stringContent);
             if (response.IsSuccessStatusCode)
             {
-                Passwords = JsonConvert.DeserializeObject<List<JTM2_Password>>((await response.Content.ReadAsStringAsync()).Trim('"').Replace("\\", ""));
+                string strResp = (await response.Content.ReadAsStringAsync()).Trim('"').Replace("\\", "");
+                JObject cObj = JObject.Parse(strResp);
+
+                return JsonConvert.DeserializeObject<List<ItemViewModel>>(cObj["Items"].ToString());
             }
 
-            return Passwords;
+            return null;
         }
 
-        public async Task<bool> SaveDataAsync(JTM2_Password pw)
+        public async Task<bool> SaveDataAsync(ItemViewModel pw)
         {
-            var uri = new Uri(string.Format(Constants.JTM2_SavePasswordUrl, string.Empty));
+            return (await _client.PostAsync(new Uri(m_strBaseURL + Constants.JTM2_SavePasswordUrl), new StringContent("{\"Id\":" + pw.Id + ",\"Name\":\"" + pw.Name + "\", \"Description\":\"" + pw.Description + "\", \"M_StrMasterPassword\":\"" + Preferences.Get("JTM2_PasswordManager_MasterPassword", "") + "\"}", Encoding.ASCII, "application/json"))).IsSuccessStatusCode;
+        }
 
-            StringContent stringContent = new StringContent("{\"PasswordId\":" + pw.PasswordId + ",\"PasswordSite\":\"" + pw.PasswordSite + "\", \"PasswordPlainText\":\"" + pw.PasswordPlainText + "\",\"PasswordUrl\":\"" + pw.PasswordUrl + "\", \"PasswordNotes\":\"" + pw.PasswordNotes + "\", \"AssignedUserId\":-1, \"ModuleId\":" + pw.ModuleId + ",\"CreatedByUserId\":" + pw.CreatedByUserId + ",\"LastModifiedByUserId\":" + pw.LastModifiedByUserId + ",\"CreatedOnDate\":\"" + pw.CreatedOnDate + "\",\"LastModifiedOnDate\":\"" + pw.LastModifiedOnDate + "\"}", System.Text.Encoding.ASCII, "application/json");
+        public async Task<bool> DeleteDataAsync(string strPasswordId)
+        {
+            Uri cUri = new Uri(string.Format(m_strBaseURL + Constants.JTM2_DeletePasswordUrl + "?itemId={0}", strPasswordId));
+            HttpResponseMessage cMsg = await _client.PostAsync(cUri, null);
+            return cMsg.IsSuccessStatusCode;
+        }
 
-            var response = await _client.PostAsync(uri, stringContent);
-            return response.IsSuccessStatusCode;
+        public async Task<bool> CreateDataAsync(string strWebsite, string strPassword, string strUrl, string strNotes)
+        {
+            return (await _client.PostAsync(new Uri(m_strBaseURL + Constants.JTM2_CreatePasswordUrl), new StringContent("{\"Name\":\"" + strWebsite + "\", \"Description\":\"" + strPassword + "\", \"M_StrMasterPassword\":\"" + Preferences.Get("JTM2_PasswordManager_MasterPassword", "") + "\" }", Encoding.ASCII, "application/json"))).IsSuccessStatusCode;
         }
     }
 }

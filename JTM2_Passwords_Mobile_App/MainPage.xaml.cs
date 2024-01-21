@@ -1,10 +1,13 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using Xamarin.Essentials;
 using Xamarin.Forms;
 
 namespace JTM2_Passwords_Mobile_App
@@ -14,46 +17,39 @@ namespace JTM2_Passwords_Mobile_App
     [DesignTimeVisible(false)]
     public partial class MainPage : ContentPage
     {
+        HttpClient _client;
+
         public MainPage()
         {
             InitializeComponent();
-            
+            _client = new HttpClient();
         }
 
-        private async void Button_Clicked(object sender, EventArgs e)
+        protected override void OnAppearing()
         {
-            RestService restService = new RestService();
-            List<JTM2_Password> passwords = await restService.RefreshDataAsync();
-
-            PasswordsList.ItemsSource = passwords;
-
-            PasswordsList.ItemTemplate = new DataTemplate(() =>
-                {
-                    // Create views with bindings for displaying each property.
-                    Label nameLabel = new Label();
-                    nameLabel.SetBinding(Label.TextProperty, "PasswordSite");
-
-                    // Return an assembled ViewCell.
-                    return new ViewCell
-                    {
-                        View = new StackLayout
-                        {
-                            Padding = new Thickness(0, 5),
-                            Orientation = StackOrientation.Horizontal,
-                            Children =
-                            {
-                                nameLabel
-                            }
-                        }
-                    };
-                });
-
-            PasswordsList.ItemTapped += PasswordsList_ItemTapped;
+            base.OnAppearing();
         }
 
-        private void PasswordsList_ItemTapped(object sender, ItemTappedEventArgs e)
+        private void Button_Clicked_1(object sender, EventArgs e)
         {
-            Navigation.PushModalAsync(new PasswordPage((JTM2_Password)e.Item));
+            Navigation.PushModalAsync(new SettingsPage());
+        }
+
+        private async void Button_Login_Clicked(object sender, EventArgs e)
+        {
+            string strResp = await (await _client.PostAsync(Preferences.Get("JTM2_PasswordManager_BaseURL", "") + Constants.JTM2_LoginUrl, new StringContent("{\"u\":\"" + entDNNUsername.Text + "\", \"p\":\"" + entDNNPassword.Text + "\"}", Encoding.ASCII, "application/json"))).Content.ReadAsStringAsync();
+
+            if (!string.IsNullOrWhiteSpace(strResp))
+            {
+                JObject cJWT = JObject.Parse(strResp);
+
+                Preferences.Set("JTM2_PasswordManager_AccessToken", cJWT["accessToken"].ToString());
+                await Navigation.PushModalAsync(new PasswordsPage());
+            }
+            else
+            {
+                lblInvalidLogin.IsVisible = true;
+            }
         }
     }
 }

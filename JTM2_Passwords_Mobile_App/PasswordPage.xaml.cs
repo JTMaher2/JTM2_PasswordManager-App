@@ -12,28 +12,39 @@ namespace JTM2_Passwords_Mobile_App
     [XamlCompilation(XamlCompilationOptions.Compile)]
     public partial class PasswordPage : ContentPage
     {
-        private JTM2_Password mPw;
-        public PasswordPage(JTM2_Password pw)
+        private ItemViewModel mPw;
+        private RestService m_cRestSvc;
+        private PasswordsPage m_cParent;
+
+        public PasswordPage(ItemViewModel pw)
         {
             InitializeComponent();
-
+            m_cRestSvc = new RestService();
             mPw = pw;
+            m_cParent = new PasswordsPage();
 
-            hiddenId.Text = pw.PasswordId.ToString();
-            siteEntry.Text = pw.PasswordSite;
-            passwordEntry.Text = pw.PasswordPlainText;
-            urlEntry.Text = pw.PasswordUrl;
-            notesEntry.Text = pw.PasswordNotes;
+            hiddenId.Text = pw.Id.ToString();
+            siteEntry.Text = pw.Name;
+            passwordEntry.Text = pw.Description;
+            //urlEntry.Text = pw.PasswordUrl;
+            //notesEntry.Text = pw.PasswordNotes;
         }
 
         private async void saveBtn_Clicked(object sender, EventArgs e)
         {
-            mPw.PasswordSite = siteEntry.Text;
-            mPw.PasswordPlainText = passwordEntry.Text;
-            mPw.PasswordUrl = urlEntry.Text;
-            mPw.PasswordNotes = notesEntry.Text;
+            mPw.Name = siteEntry.Text;
+            mPw.Description = passwordEntry.Text;
+            //mPw.PasswordUrl = urlEntry.Text;
+            //mPw.PasswordNotes = notesEntry.Text;
 
-            await new RestService().SaveDataAsync(mPw);
+            await m_cRestSvc.SaveDataAsync(mPw);
+            await Navigation.PushModalAsync(m_cParent);
+        }
+
+        private async void deleteBtn_Clicked(object sender, EventArgs e)
+        {
+            await m_cRestSvc.DeleteDataAsync(hiddenId.Text);
+            await Navigation.PushModalAsync(m_cParent);
         }
     }
 }
